@@ -1,14 +1,13 @@
-package com.gab.DesafioBack_End.entitys;
+package com.gab.DesafioBack_End.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
 import java.math.BigDecimal;
 
-
 @Entity
-@Table(name = "users")
-public class Users {
+@Table(name = "seller")
+public class Seller {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,29 +18,26 @@ public class Users {
 
     @NotBlank
     @Column(unique = true)
-    private String cpf;
+    private String cnpj;
 
     @NotBlank
+    @Column(unique = true)
     private String email;
 
     @NotBlank
     private String password;
 
-    @NotBlank
-    private String type;
-
     private BigDecimal amount;
 
-    public Users(String name, String cpf, String email, String password, String type, BigDecimal amount){
+    public Seller(String name, String cnpj, String email, String password, BigDecimal amount){
         this.name = name;
-        this.cpf = cpf;
+        this.cnpj = cnpj;
         this.email = email;
         this.password = password;
-        this.type = type;
         this.amount = amount;
     }
 
-    public Users(){}
+    public Seller(){}
 
     public Integer getId(){
         return id;
@@ -51,8 +47,8 @@ public class Users {
         return name;
     }
 
-    public String getCpf(){
-        return cpf;
+    public String getCnpj(){
+        return cnpj;
     }
 
     public String getEmail(){
@@ -63,10 +59,6 @@ public class Users {
         return password;
     }
 
-    public String getType(){
-        return type;
-    }
-
     public BigDecimal getAmount(){
         return amount;
     }
@@ -75,8 +67,8 @@ public class Users {
         this.name = name;
     }
 
-    public void setCpf(String cpf){
-        this.cpf = cpf;
+    public void setCnpj(String cnpj){
+        this.cnpj = cnpj;
     }
 
     public void setEmail(String email){
@@ -85,10 +77,6 @@ public class Users {
 
     public void setPassword(String password){
         this.password = password;
-    }
-
-    public void setType(String type){
-        this.type = type;
     }
 
     public void setAmount(BigDecimal amount){

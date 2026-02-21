@@ -1,4 +1,4 @@
-package com.gab.DesafioBack_End.DTO;
+package com.gab.DesafioBack_End.dtos.records;
 
 import java.math.BigDecimal;
 
@@ -7,6 +7,5 @@ public record RegisterUsersDTO(
         String cpf,
         String email,
         String password,
-        String type,
         BigDecimal amount) {
 }

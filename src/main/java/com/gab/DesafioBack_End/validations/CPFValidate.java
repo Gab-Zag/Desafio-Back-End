@@ -1,4 +1,4 @@
-package com.gab.DesafioBack_End.DTO;
+package com.gab.DesafioBack_End.validations;
 
 import java.util.InputMismatchException;
 

@@ -1,23 +1,27 @@
 package com.gab.DesafioBack_End.services;
 
-import com.gab.DesafioBack_End.DTO.RegisterUsersDTO;
-import com.gab.DesafioBack_End.entitys.Users;
+import com.gab.DesafioBack_End.dtos.records.RegisterUsersDTO;
+import com.gab.DesafioBack_End.dtos.transfer.TransferUserbyUser;
+import com.gab.DesafioBack_End.entities.Users;
 import com.gab.DesafioBack_End.exceptions.InvalidCPFException;
 import com.gab.DesafioBack_End.exceptions.InvalidEmailException;
+import com.gab.DesafioBack_End.exceptions.InvalidIDReciverException;
+import com.gab.DesafioBack_End.exceptions.InvalidIDSenderException;
 import com.gab.DesafioBack_End.repositorys.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
 
-import static com.gab.DesafioBack_End.DTO.CPFValidate.isCPF;
-import static com.gab.DesafioBack_End.DTO.CPFValidate.sendCPF;
+import static com.gab.DesafioBack_End.validations.CPFValidate.isCPF;
+import static com.gab.DesafioBack_End.validations.CPFValidate.sendCPF;
 
 @Service
-public class UsersServices {
+public class UsersService {
     private final UserRepository userRepository;
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[a-z]+$");
 
-    public UsersServices(UserRepository userRepository){
+    public UsersService(UserRepository userRepository){
         this.userRepository = userRepository;
     }
 
@@ -33,10 +37,13 @@ public class UsersServices {
         users.setCpf(cpfValidated);
         users.setEmail(dto.email());
         users.setPassword(dto.password());
-        users.setType(dto.type());
         users.setAmount(dto.amount());
 
         userRepository.save(users);
+    }
+
+    public void trasfer(Integer sendeid, Integer reciverid,TransferUserbyUser dto){
+        findUsers(reciverid, sendeid);
     }
 
     private void validateEmail(String email){
@@ -50,6 +57,19 @@ public class UsersServices {
             throw new InvalidCPFException("CPF Invalido");
         }else{
             return sendCPF(cpf);
+        }
+    }
+
+    protected void findUsers(Integer id_reciver, Integer id_sender){
+
+        Optional<Users> optionalUsersReciver =  userRepository.findById(id_reciver);
+        Optional<Users> optionalUsersSender = userRepository.findById(id_sender);
+
+        if(optionalUsersReciver.isEmpty()){
+            throw new InvalidIDReciverException("Destinario Inexistente");
+        }
+        if(optionalUsersSender.isEmpty()){
+            throw new InvalidIDSenderException("Usuario nao encontrado");
         }
     }
 
