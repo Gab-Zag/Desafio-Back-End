@@ -1,10 +1,10 @@
-package com.gab.DesafioBack_End.dtos.records;
+package com.gab.DesafioBack_End.dtos.registers;
 
 import java.math.BigDecimal;
 
-public record RegisterUsersDTO(
+public record RegisterSellerDTO(
         String name,
-        String cpf,
+        String cnpj,
         String email,
         String password,
         BigDecimal amount) {

@@ -1,6 +1,7 @@
 package com.gab.DesafioBack_End.controllers;
 
-import com.gab.DesafioBack_End.dtos.records.RegisterUsersDTO;
+import com.gab.DesafioBack_End.dtos.login.LoginUsersAndSellersDTO;
+import com.gab.DesafioBack_End.dtos.registers.RegisterUsersDTO;
 import com.gab.DesafioBack_End.dtos.transfer.TransferUserBySeller;
 import com.gab.DesafioBack_End.dtos.transfer.TransferUserByUser;
 import com.gab.DesafioBack_End.services.UsersService;
@@ -33,5 +34,11 @@ public class UsersController {
     public ResponseEntity<Void> transferBySeller(@PathVariable Integer senderid, @PathVariable Integer reciverid, @RequestBody TransferUserBySeller dto){
         usersService.transferBySeller(senderid,reciverid,dto);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/loginByUsers")
+    public ResponseEntity<String> login(@RequestBody LoginUsersAndSellersDTO dto){
+        String confirmed = usersService.login(dto);
+        return ResponseEntity.ok(confirmed);
     }
 }

@@ -1,6 +1,7 @@
 package com.gab.DesafioBack_End.services;
 
-import com.gab.DesafioBack_End.dtos.records.RegisterUsersDTO;
+import com.gab.DesafioBack_End.dtos.login.LoginUsersAndSellersDTO;
+import com.gab.DesafioBack_End.dtos.registers.RegisterUsersDTO;
 import com.gab.DesafioBack_End.dtos.transfer.TransferUserBySeller;
 import com.gab.DesafioBack_End.dtos.transfer.TransferUserByUser;
 import com.gab.DesafioBack_End.entities.Seller;
@@ -71,6 +72,16 @@ public class UsersService {
 
         userRepository.save(sender);
         sellerRepository.save(reciver);
+    }
+
+    public String login(LoginUsersAndSellersDTO dto){
+        Users users = userRepository.findByEmail(dto.email()).orElseThrow(() -> new InvalidEmailException("Nenhum usuário possui este Email"));
+
+        if (!dto.password().equals(users.getPassword())){
+            throw new InvalidPassowordException("Senha incorreta");
+        }
+
+        return "Login realizado com sucesso";
     }
 
     private void validateEmail(String email){

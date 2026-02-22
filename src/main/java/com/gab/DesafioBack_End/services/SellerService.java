@@ -1,9 +1,11 @@
 package com.gab.DesafioBack_End.services;
 
-import com.gab.DesafioBack_End.dtos.records.RegisterSellerDTO;
+import com.gab.DesafioBack_End.dtos.login.LoginUsersAndSellersDTO;
+import com.gab.DesafioBack_End.dtos.registers.RegisterSellerDTO;
 import com.gab.DesafioBack_End.entities.Seller;
 import com.gab.DesafioBack_End.exceptions.InvalidCNPJException;
 import com.gab.DesafioBack_End.exceptions.InvalidEmailException;
+import com.gab.DesafioBack_End.exceptions.InvalidPassowordException;
 import com.gab.DesafioBack_End.repositorys.SellerRepository;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +38,17 @@ public class SellerService {
         seller.setAmount(dto.amount());
 
         sellerRepository.save(seller);
+    }
+
+    public String login(LoginUsersAndSellersDTO dto){
+
+        Seller seller = sellerRepository.findByEmail(dto.email()).orElseThrow(() -> new InvalidEmailException("Nenhum usuário possui este Email"));
+
+        if(!seller.getPassword().equals(dto.password())){
+            throw new InvalidPassowordException("Senha Invalida");
+        }
+
+        return "Login Realizado com sucesso";
     }
 
     private void validateEmail(String email){
