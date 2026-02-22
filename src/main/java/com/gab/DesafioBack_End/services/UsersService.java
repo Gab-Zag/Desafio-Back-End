@@ -9,6 +9,8 @@ import com.gab.DesafioBack_End.entities.Users;
 import com.gab.DesafioBack_End.exceptions.*;
 import com.gab.DesafioBack_End.repositorys.SellerRepository;
 import com.gab.DesafioBack_End.repositorys.UserRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.regex.Pattern;
@@ -20,11 +22,14 @@ import static com.gab.DesafioBack_End.validations.CPFValidate.sendCPF;
 public class UsersService {
     private final UserRepository userRepository;
     private final SellerRepository sellerRepository;
+    @Autowired
+    private final AuthorizeService authorizeService;
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[a-z]+$");
 
-    public UsersService(UserRepository userRepository,SellerRepository sellerRepository){
+    public UsersService(UserRepository userRepository,SellerRepository sellerRepository, AuthorizeService authorizeService){
         this.userRepository = userRepository;
         this.sellerRepository = sellerRepository;
+        this.authorizeService = authorizeService;
     }
 
     public void register(RegisterUsersDTO dto){
@@ -50,7 +55,9 @@ public class UsersService {
 
         if (sender.getAmount().compareTo(dto.value()) < 0) {
             throw new RuntimeException("Saldo insuficiente");
-        }else{
+        }else if(!authorizeService.isAuthorized()){
+            throw new RuntimeException("Transferência negada");
+        } else{
             sender.setAmount(sender.getAmount().subtract(dto.value()));
             reciver.setAmount(reciver.getAmount().add(dto.value()));
         }
@@ -59,12 +66,15 @@ public class UsersService {
         userRepository.save(reciver);
     }
 
+    @Transactional
     public void transferBySeller(Integer sendeid, Integer reciverid, TransferUserBySeller dto){
         Users sender = userRepository.findById(sendeid).orElseThrow(() -> new InvalidIDSenderException("Usuario nao encontrado"));
         Seller reciver = sellerRepository.findById(reciverid).orElseThrow(() -> new InvalidIDReciverException("Destinario Inexistente"));
 
         if (sender.getAmount().compareTo(dto.value()) < 0) {
             throw new RuntimeException("Saldo insuficiente");
+        }else if(!authorizeService.isAuthorized()){
+            throw new RuntimeException("Transferência negada");
         }else{
             sender.setAmount(sender.getAmount().subtract(dto.value()));
             reciver.setAmount(reciver.getAmount().add(dto.value()));
@@ -87,6 +97,9 @@ public class UsersService {
     private void validateEmail(String email){
         if (email == null || !EMAIL_PATTERN.matcher(email).matches()){
             throw new InvalidEmailException("Email Invalido");
+        }
+        if(sellerRepository.findByEmail(email).isPresent()){
+            throw new InvalidPassowordException("Email ja esta cadastrado");
         }
     }
 

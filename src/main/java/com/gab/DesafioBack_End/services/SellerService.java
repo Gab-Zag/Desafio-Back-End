@@ -7,6 +7,7 @@ import com.gab.DesafioBack_End.exceptions.InvalidCNPJException;
 import com.gab.DesafioBack_End.exceptions.InvalidEmailException;
 import com.gab.DesafioBack_End.exceptions.InvalidPassowordException;
 import com.gab.DesafioBack_End.repositorys.SellerRepository;
+import com.gab.DesafioBack_End.repositorys.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.regex.Pattern;
@@ -16,11 +17,13 @@ import static com.gab.DesafioBack_End.validations.CNPJValidate.sendCNPJ;
 
 @Service
 public class SellerService {
+    private final UserRepository userRepository;
     private SellerRepository sellerRepository;
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[a-z]+$");
 
-    public SellerService(SellerRepository sellerRepository){
+    public SellerService(SellerRepository sellerRepository, UserRepository userRepository){
         this.sellerRepository = sellerRepository;
+        this.userRepository = userRepository;
     }
 
     public void register(RegisterSellerDTO dto){
@@ -54,6 +57,8 @@ public class SellerService {
     private void validateEmail(String email){
         if(email == null || !EMAIL_PATTERN.matcher(email).matches()){
             throw new InvalidEmailException("Email Invalido");
+        }else if(userRepository.findByEmail(email).isPresent()){
+            throw new InvalidEmailException("Email ja esta sendo utilizaco");
         }
     }
 
