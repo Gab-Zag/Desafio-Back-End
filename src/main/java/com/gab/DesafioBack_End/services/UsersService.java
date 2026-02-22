@@ -5,9 +5,11 @@ import com.gab.DesafioBack_End.dtos.registers.RegisterUsersDTO;
 import com.gab.DesafioBack_End.dtos.transfer.TransferUserBySeller;
 import com.gab.DesafioBack_End.dtos.transfer.TransferUserByUser;
 import com.gab.DesafioBack_End.entities.Seller;
+import com.gab.DesafioBack_End.entities.Transfer;
 import com.gab.DesafioBack_End.entities.Users;
 import com.gab.DesafioBack_End.exceptions.*;
 import com.gab.DesafioBack_End.repositorys.SellerRepository;
+import com.gab.DesafioBack_End.repositorys.TransferRepository;
 import com.gab.DesafioBack_End.repositorys.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +24,16 @@ import static com.gab.DesafioBack_End.validations.CPFValidate.sendCPF;
 public class UsersService {
     private final UserRepository userRepository;
     private final SellerRepository sellerRepository;
+    private final TransferRepository transferRepository;
     @Autowired
     private final AuthorizeService authorizeService;
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[a-z]+$");
 
-    public UsersService(UserRepository userRepository,SellerRepository sellerRepository, AuthorizeService authorizeService){
+    public UsersService(UserRepository userRepository,SellerRepository sellerRepository, AuthorizeService authorizeService,TransferRepository transferRepository){
         this.userRepository = userRepository;
         this.sellerRepository = sellerRepository;
         this.authorizeService = authorizeService;
+        this.transferRepository = transferRepository;
     }
 
     public void register(RegisterUsersDTO dto){
@@ -60,10 +64,16 @@ public class UsersService {
         } else{
             sender.setAmount(sender.getAmount().subtract(dto.value()));
             reciver.setAmount(reciver.getAmount().add(dto.value()));
+            Transfer transfer = new Transfer();
+            transfer.setSender_user_id(sender.getId());
+            transfer.setReceiver_user_Id(reciverid);
+            transfer.setValue(dto.value());
+            userRepository.save(sender);
+            userRepository.save(reciver);
+            transferRepository.save(transfer);
         }
 
-        userRepository.save(sender);
-        userRepository.save(reciver);
+
     }
 
     @Transactional
@@ -78,10 +88,14 @@ public class UsersService {
         }else{
             sender.setAmount(sender.getAmount().subtract(dto.value()));
             reciver.setAmount(reciver.getAmount().add(dto.value()));
+            Transfer transfer = new Transfer();
+            transfer.setSender_user_id(sendeid);
+            transfer.setReceiver_seller_id(reciverid);
+            transfer.setValue(dto.value());
+            userRepository.save(sender);
+            sellerRepository.save(reciver);
+            transferRepository.save(transfer);
         }
-
-        userRepository.save(sender);
-        sellerRepository.save(reciver);
     }
 
     public String login(LoginUsersAndSellersDTO dto){
