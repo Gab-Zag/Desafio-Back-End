@@ -1,16 +1,15 @@
 package com.gab.DesafioBack_End.services;
 
 import com.gab.DesafioBack_End.dtos.records.RegisterUsersDTO;
-import com.gab.DesafioBack_End.dtos.transfer.TransferUserbyUser;
+import com.gab.DesafioBack_End.dtos.transfer.TransferUserBySeller;
+import com.gab.DesafioBack_End.dtos.transfer.TransferUserByUser;
+import com.gab.DesafioBack_End.entities.Seller;
 import com.gab.DesafioBack_End.entities.Users;
-import com.gab.DesafioBack_End.exceptions.InvalidCPFException;
-import com.gab.DesafioBack_End.exceptions.InvalidEmailException;
-import com.gab.DesafioBack_End.exceptions.InvalidIDReciverException;
-import com.gab.DesafioBack_End.exceptions.InvalidIDSenderException;
+import com.gab.DesafioBack_End.exceptions.*;
+import com.gab.DesafioBack_End.repositorys.SellerRepository;
 import com.gab.DesafioBack_End.repositorys.UserRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static com.gab.DesafioBack_End.validations.CPFValidate.isCPF;
@@ -19,10 +18,12 @@ import static com.gab.DesafioBack_End.validations.CPFValidate.sendCPF;
 @Service
 public class UsersService {
     private final UserRepository userRepository;
+    private final SellerRepository sellerRepository;
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[a-z]+$");
 
-    public UsersService(UserRepository userRepository){
+    public UsersService(UserRepository userRepository,SellerRepository sellerRepository){
         this.userRepository = userRepository;
+        this.sellerRepository = sellerRepository;
     }
 
     public void register(RegisterUsersDTO dto){
@@ -42,8 +43,34 @@ public class UsersService {
         userRepository.save(users);
     }
 
-    public void trasfer(Integer sendeid, Integer reciverid,TransferUserbyUser dto){
-        findUsers(reciverid, sendeid);
+    public void transferByUser(Integer sendeid, Integer reciverid, TransferUserByUser dto){
+        Users sender = userRepository.findById(sendeid).orElseThrow(() -> new InvalidIDSenderException("Usuario nao encontrado"));
+        Users reciver = userRepository.findById(reciverid).orElseThrow(() -> new InvalidIDReciverException("Destinario Inexistente"));
+
+        if (sender.getAmount().compareTo(dto.value()) < 0) {
+            throw new RuntimeException("Saldo insuficiente");
+        }else{
+            sender.setAmount(sender.getAmount().subtract(dto.value()));
+            reciver.setAmount(reciver.getAmount().add(dto.value()));
+        }
+
+        userRepository.save(sender);
+        userRepository.save(reciver);
+    }
+
+    public void transferBySeller(Integer sendeid, Integer reciverid, TransferUserBySeller dto){
+        Users sender = userRepository.findById(sendeid).orElseThrow(() -> new InvalidIDSenderException("Usuario nao encontrado"));
+        Seller reciver = sellerRepository.findById(reciverid).orElseThrow(() -> new InvalidIDReciverException("Destinario Inexistente"));
+
+        if (sender.getAmount().compareTo(dto.value()) < 0) {
+            throw new RuntimeException("Saldo insuficiente");
+        }else{
+            sender.setAmount(sender.getAmount().subtract(dto.value()));
+            reciver.setAmount(reciver.getAmount().add(dto.value()));
+        }
+
+        userRepository.save(sender);
+        sellerRepository.save(reciver);
     }
 
     private void validateEmail(String email){
@@ -57,19 +84,6 @@ public class UsersService {
             throw new InvalidCPFException("CPF Invalido");
         }else{
             return sendCPF(cpf);
-        }
-    }
-
-    protected void findUsers(Integer id_reciver, Integer id_sender){
-
-        Optional<Users> optionalUsersReciver =  userRepository.findById(id_reciver);
-        Optional<Users> optionalUsersSender = userRepository.findById(id_sender);
-
-        if(optionalUsersReciver.isEmpty()){
-            throw new InvalidIDReciverException("Destinario Inexistente");
-        }
-        if(optionalUsersSender.isEmpty()){
-            throw new InvalidIDSenderException("Usuario nao encontrado");
         }
     }
 

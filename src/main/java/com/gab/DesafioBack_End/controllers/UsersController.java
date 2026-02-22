@@ -1,7 +1,8 @@
 package com.gab.DesafioBack_End.controllers;
 
 import com.gab.DesafioBack_End.dtos.records.RegisterUsersDTO;
-import com.gab.DesafioBack_End.dtos.transfer.TransferUserbyUser;
+import com.gab.DesafioBack_End.dtos.transfer.TransferUserBySeller;
+import com.gab.DesafioBack_End.dtos.transfer.TransferUserByUser;
 import com.gab.DesafioBack_End.services.UsersService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,9 +23,15 @@ public class UsersController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/transfer/{senderid}/{reciverid}")
-    public ResponseEntity<Void> tranfer(@PathVariable Integer senderid, @PathVariable Integer reciverid, @RequestBody TransferUserbyUser dto){
-        usersService.trasfer(senderid, reciverid,dto);
+    @PutMapping("/transferByUser/{senderid}/{reciverid}")
+    public ResponseEntity<Void> transferByUser(@PathVariable Integer senderid, @PathVariable Integer reciverid, @RequestBody TransferUserByUser dto){
+        usersService.transferByUser(senderid, reciverid,dto);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/transferBySeller/{senderid}/{reciverid}")
+    public ResponseEntity<Void> transferBySeller(@PathVariable Integer senderid, @PathVariable Integer reciverid, @RequestBody TransferUserBySeller dto){
+        usersService.transferBySeller(senderid,reciverid,dto);
         return ResponseEntity.ok().build();
     }
 }
